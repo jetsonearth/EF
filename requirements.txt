@@ -1,6 +1,6 @@
 streamlit
 requests
-sounddevice 
+soundfile 
 vosk
 transformers
 pyttsx3
