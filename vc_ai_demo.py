@@ -17,7 +17,7 @@ REDIRECT_URI = 'https://efdemo.streamlit.app/'  # Your Redirect URI
 vosk_model = Model("vosk-model-en-us-0.22-lgraph")  # Replace "vosk-model-en-us-0.22-lgraph" with the path to your Vosk model
 
 # Load Hugging Face model for text generation
-nlp_model = pipeline("text-generation", model="gpt2")  # You can use a smaller model like distilgpt2
+nlp_model = pipeline("text-generation", model="distilgpt2")  # Use a smaller model like distilgpt2 for lower memory usage
 
 # Zoom OAuth URL
 auth_url = f"https://zoom.us/oauth/authorize?response_type=code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&scope=meeting:write meeting:write:admin"
