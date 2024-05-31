@@ -12,8 +12,8 @@ import wave
 # Zoom OAuth credentials (replace with your own)
 CLIENT_ID = 'fhTNVEMTLGjbswpuumQ6Q'
 CLIENT_SECRET = '32l1eslYqGoHiY7a6ugFl3Xh389snwbe'
-REDIRECT_URI = 'https://ideal-xylophone-55grxpjpv6j27p5-8501.app.github.dev/'
-# REDIRECT_URI = 'https://efdemo.streamlit.app/'  # Your Redirect URI
+# REDIRECT_URI = 'https://ideal-xylophone-55grxpjpv6j27p5-8501.app.github.dev/'
+REDIRECT_URI = 'https://efdemo.streamlit.app/'  # Your Redirect URI
 
 # Load Vosk model for speech-to-text
 vosk_model = Model("vosk-model-en-us-0.22-lgraph")  # Replace "model" with the path to your Vosk model
