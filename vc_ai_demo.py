@@ -63,6 +63,9 @@ def get_nlp_response(prompt):
     response = nlp_model(prompt, max_length=50)
     return response[0]["generated_text"].strip()
 
+# Debug logging for each step
+st.write("Starting Streamlit App")
+
 if 'code' not in query_params:
     st.write("Rendering form for user details...")
     # Display the form to collect user details
