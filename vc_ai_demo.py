@@ -1,20 +1,21 @@
 import streamlit as st
 import requests
 import json
-import pyaudio
-import wave
 import os
 from vosk import Model, KaldiRecognizer
 from transformers import pipeline
 import pyttsx3
 import base64
+import sounddevice as sd
+import wave
 
+# Zoom OAuth credentials (replace with your own)
 CLIENT_ID = 'fhTNVEMTLGjbswpuumQ6Q'
 CLIENT_SECRET = '32l1eslYqGoHiY7a6ugFl3Xh389snwbe'
 REDIRECT_URI = 'https://efdemo.streamlit.app/'  # Your Redirect URI
 
 # Load Vosk model for speech-to-text
-vosk_model = Model("model")  # Replace "model" with the path to your Vosk model
+vosk_model = Model("vosk-model-en-us-0.22-lgraph")  # Replace "model" with the path to your Vosk model
 
 # Load Hugging Face model for text generation
 nlp_model = pipeline("text-generation", model="gpt2")  # You can use a smaller model like distilgpt2
@@ -29,30 +30,19 @@ st.title("VC AI Agent Demo with OAuth")
 
 query_params = st.experimental_get_query_params()
 
-def record_audio(filename, duration=5):
-    """Record audio for a given duration."""
-    CHUNK = 1024
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 1
-    RATE = 44100
-
-    p = pyaudio.PyAudio()
-    stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
-
-    frames = []
-    for _ in range(0, int(RATE / CHUNK * duration)):
-        data = stream.read(CHUNK)
-        frames.append(data)
-
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-
+def record_audio(filename, duration=5, fs=44100):
+    """Record audio for a given duration using sounddevice."""
+    print("Recording audio...")
+    recording = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='int16')
+    sd.wait()  # Wait until the recording is finished
+    print("Recording complete.")
+    
+    # Save the recording as a WAV file
     wf = wave.open(filename, 'wb')
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(p.get_sample_size(FORMAT))
-    wf.setframerate(RATE)
-    wf.writeframes(b''.join(frames))
+    wf.setnchannels(1)
+    wf.setsampwidth(2)  # 16-bit audio
+    wf.setframerate(fs)
+    wf.writeframes(recording.tobytes())
     wf.close()
 
 def transcribe_audio(filename):
