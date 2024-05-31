@@ -12,11 +12,10 @@ import wave
 # Zoom OAuth credentials (replace with your own)
 CLIENT_ID = 'fhTNVEMTLGjbswpuumQ6Q'
 CLIENT_SECRET = '32l1eslYqGoHiY7a6ugFl3Xh389snwbe'
-# REDIRECT_URI = 'https://ideal-xylophone-55grxpjpv6j27p5-8501.app.github.dev/'
 REDIRECT_URI = 'https://efdemo.streamlit.app/'  # Your Redirect URI
 
 # Load Vosk model for speech-to-text
-vosk_model = Model("vosk-model-en-us-0.22-lgraph")  # Replace "model" with the path to your Vosk model
+vosk_model = Model("vosk-model-en-us-0.22-lgraph")  # Replace "vosk-model-en-us-0.22-lgraph" with the path to your Vosk model
 
 # Load Hugging Face model for text generation
 nlp_model = pipeline("text-generation", model="gpt2")  # You can use a smaller model like distilgpt2
@@ -26,16 +25,27 @@ auth_url = f"https://zoom.us/oauth/authorize?response_type=code&client_id={CLIEN
 
 st.title("VC AI Agent Demo with OAuth")
 
-query_params = st.query_params()
+query_params = st.experimental_get_query_params()
 st.write("Query Params:", query_params)
 
 def record_audio(filename, duration=5, fs=44100):
-    """Record audio for a given duration using PySoundFile."""
-    print("Recording audio...")
-    recording = sf.SoundFile(filename, mode='x', samplerate=fs, channels=1, subtype='PCM_16')
-    recording.record(int(duration * fs))
-    recording.close()
-    print("Recording complete.")
+    """Record audio using PySoundFile and microphone input."""
+    import pyaudio
+    p = pyaudio.PyAudio()
+    stream = p.open(format=pyaudio.paInt16, channels=1, rate=fs, input=True, frames_per_buffer=1024)
+    frames = []
+    for _ in range(0, int(fs / 1024 * duration)):
+        data = stream.read(1024)
+        frames.append(data)
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+    wf = wave.open(filename, 'wb')
+    wf.setnchannels(1)
+    wf.setsampwidth(p.get_sample_size(pyaudio.paInt16))
+    wf.setframerate(fs)
+    wf.writeframes(b''.join(frames))
+    wf.close()
 
 def transcribe_audio(filename):
     """Transcribe audio using Vosk."""
