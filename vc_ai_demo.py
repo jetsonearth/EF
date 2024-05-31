@@ -29,6 +29,7 @@ auth_url = f"https://zoom.us/oauth/authorize?response_type=code&client_id={CLIEN
 st.title("VC AI Agent Demo with OAuth")
 
 query_params = st.experimental_get_query_params()
+st.write("Query Params:", query_params)
 
 def record_audio(filename, duration=5, fs=44100):
     """Record audio for a given duration using PySoundFile."""
@@ -66,6 +67,7 @@ def get_nlp_response(prompt):
     return response[0]["generated_text"].strip()
 
 if 'code' not in query_params:
+    st.write("Rendering form for user details...")
     # Display the form to collect user details
     with st.form(key='meeting_form'):
         name = st.text_input("Your Name")
@@ -74,9 +76,11 @@ if 'code' not in query_params:
         submit_button = st.form_submit_button(label='Request a Meeting')
 
     if submit_button:
+        st.write("Submit button clicked")
         st.write("Please authorize the app to use your Zoom account:")
         st.write(f"[Authorize here]({auth_url})")
 else:
+    st.write("Authorization code received, proceeding with OAuth...")
     # Step 2: Handle the redirect and exchange the code for an access token
     code = query_params['code'][0]
 
@@ -97,6 +101,7 @@ else:
 
     response = requests.post(token_url, headers=headers, data=data)
     tokens = response.json()
+    st.write("Token Response:", tokens)
 
     if 'access_token' in tokens:
         access_token = tokens['access_token']
@@ -120,6 +125,7 @@ else:
 
         response = requests.post("https://api.zoom.us/v2/users/me/meetings", headers=headers, json=meeting_data)
         meeting_details = response.json()
+        st.write("Meeting Details:", meeting_details)
 
         if 'id' in meeting_details and 'start_url' in meeting_details and 'join_url' in meeting_details:
             st.write("Meeting created successfully!")
