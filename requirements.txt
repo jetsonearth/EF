@@ -6,3 +6,4 @@ transformers
 gtts
 wave
 torch
+streamlit_webrtc
