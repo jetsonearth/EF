@@ -1,8 +1,6 @@
-streamlit==1.12.0
+streamlit
 requests
+soundfile 
 vosk
 transformers
 pyttsx3
-soundfile
-wave
-torch
