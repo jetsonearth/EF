@@ -1,13 +1,12 @@
 import streamlit as st
 import requests
 import json
-import os
 from vosk import Model, KaldiRecognizer
 from transformers import pipeline
 from gtts import gTTS
 import base64
-import soundfile as sf
 import wave
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, ClientSettings
 
 # Zoom OAuth credentials (replace with your own)
 CLIENT_ID = 'fhTNVEMTLGjbswpuumQ6Q'
@@ -25,27 +24,8 @@ auth_url = f"https://zoom.us/oauth/authorize?response_type=code&client_id={CLIEN
 
 st.title("VC AI Agent Demo with OAuth")
 
-query_params = st.query_params()
+query_params = st.experimental_get_query_params()
 st.write("Query Params:", query_params)
-
-def record_audio(filename, duration=5, fs=44100):
-    """Record audio using PySoundFile and microphone input."""
-    import pyaudio
-    p = pyaudio.PyAudio()
-    stream = p.open(format=pyaudio.paInt16, channels=1, rate=fs, input=True, frames_per_buffer=1024)
-    frames = []
-    for _ in range(0, int(fs / 1024 * duration)):
-        data = stream.read(1024)
-        frames.append(data)
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-    wf = wave.open(filename, 'wb')
-    wf.setnchannels(1)
-    wf.setsampwidth(p.get_sample_size(pyaudio.paInt16))
-    wf.setframerate(fs)
-    wf.writeframes(b''.join(frames))
-    wf.close()
 
 def transcribe_audio(filename):
     """Transcribe audio using Vosk."""
@@ -73,6 +53,15 @@ def get_nlp_response(prompt):
     """Get a response from a pre-trained NLP model (Hugging Face)."""
     response = nlp_model(prompt, max_length=50)
     return response[0]["generated_text"].strip()
+
+def save_audio(frames, filename, sample_rate):
+    """Save audio frames to a WAV file."""
+    wf = wave.open(filename, 'wb')
+    wf.setnchannels(1)
+    wf.setsampwidth(2)
+    wf.setframerate(sample_rate)
+    wf.writeframes(b''.join(frames))
+    wf.close()
 
 # Debug logging for each step
 st.write("Starting Streamlit App")
@@ -147,22 +136,44 @@ else:
 
             # AI Agent logic
             st.write("Recording audio for 5 seconds...")
-            record_audio("input.wav")
 
-            st.write("Transcribing audio...")
-            transcript = transcribe_audio("input.wav")
-            st.write("You said:", transcript)
+            webrtc_ctx = webrtc_streamer(
+                key="example",
+                mode=WebRtcMode.SENDRECV,
+                client_settings=ClientSettings(
+                    media_stream_constraints={
+                        "audio": True,
+                        "video": False
+                    }
+                )
+            )
 
-            st.write("Generating AI response...")
-            ai_response = get_nlp_response(transcript)
-            st.write("AI says:", ai_response)
+            if webrtc_ctx.state.playing:
+                frames = []
+                sample_rate = 44100
 
-            st.write("Converting AI response to speech...")
-            synthesize_speech(ai_response, "response.mp3")
+                for _ in range(0, int(sample_rate / 1024 * 5)):  # 5 seconds
+                    if webrtc_ctx.audio_receiver:
+                        audio_frame = webrtc_ctx.audio_receiver.get_frame()
+                        frames.append(audio_frame.to_ndarray().tobytes())
 
-            st.write("Playing AI response...")
-            audio_file = open("response.mp3", "rb")
-            st.audio(audio_file.read(), format="audio/mp3")
+                save_audio(frames, "input.wav", sample_rate)
+                st.write("Recording complete.")
+
+                st.write("Transcribing audio...")
+                transcript = transcribe_audio("input.wav")
+                st.write("You said:", transcript)
+
+                st.write("Generating AI response...")
+                ai_response = get_nlp_response(transcript)
+                st.write("AI says:", ai_response)
+
+                st.write("Converting AI response to speech...")
+                synthesize_speech(ai_response, "response.mp3")
+
+                st.write("Playing AI response...")
+                audio_file = open("response.mp3", "rb")
+                st.audio(audio_file.read(), format="audio/mp3")
         else:
             st.error("Error creating Zoom meeting. Please check the API response.")
             st.write(meeting_details)
