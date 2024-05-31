@@ -6,7 +6,7 @@ from vosk import Model, KaldiRecognizer
 from transformers import pipeline
 import pyttsx3
 import base64
-import sounddevice as sd
+import soundfile as sf
 import wave
 
 # Zoom OAuth credentials (replace with your own)
@@ -31,19 +31,12 @@ st.title("VC AI Agent Demo with OAuth")
 query_params = st.experimental_get_query_params()
 
 def record_audio(filename, duration=5, fs=44100):
-    """Record audio for a given duration using sounddevice."""
+    """Record audio for a given duration using PySoundFile."""
     print("Recording audio...")
-    recording = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='int16')
-    sd.wait()  # Wait until the recording is finished
+    recording = sf.SoundFile(filename, mode='x', samplerate=fs, channels=1, subtype='PCM_16')
+    recording.record(int(duration * fs))
+    recording.close()
     print("Recording complete.")
-    
-    # Save the recording as a WAV file
-    wf = wave.open(filename, 'wb')
-    wf.setnchannels(1)
-    wf.setsampwidth(2)  # 16-bit audio
-    wf.setframerate(fs)
-    wf.writeframes(recording.tobytes())
-    wf.close()
 
 def transcribe_audio(filename):
     """Transcribe audio using Vosk."""
