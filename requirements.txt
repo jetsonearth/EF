@@ -3,4 +3,7 @@ requests
 soundfile 
 vosk
 transformers
-pyttsx3
+gtts
+wave
+torch
+
