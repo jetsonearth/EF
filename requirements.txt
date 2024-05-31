@@ -1,6 +1,8 @@
 streamlit
 requests
-soundfile 
 vosk
 transformers
 pyttsx3
+soundfile
+wave
+torch
