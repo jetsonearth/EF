@@ -6,20 +6,29 @@ import json
 # Zoom OAuth credentials (replace with your own)
 CLIENT_ID = 'H6VyMtjWQV2VNr2JwAQNDA'
 CLIENT_SECRET = 'zpqivmGpbBbo7YsVg4zRBHiu0UKgAcMz'
-REDIRECT_URI = 'http://localhost:8516'  # Your Redirect URI
+REDIRECT_URI = 'https://efdemo.streamlit.app/'  # Your Redirect URI
 
 # Step 1: Authorize the app
 auth_url = f"https://zoom.us/oauth/authorize?response_type=code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}"
 
 st.title("VC AI Agent Demo with OAuth")
 
-if 'code' not in st.query_params:
-    st.write("Please authorize the app to use your Zoom account:")
-    if st.button('Authorize'):
+query_params = st.experimental_get_query_params()
+
+if 'code' not in query_params:
+    # Display the form to collect user details
+    with st.form(key='meeting_form'):
+        name = st.text_input("Your Name")
+        email = st.text_input("Your Email")
+        question = st.text_area("What would you like to discuss?")
+        submit_button = st.form_submit_button(label='Request a Meeting')
+
+    if submit_button:
+        st.write("Please authorize the app to use your Zoom account:")
         st.write(f"[Authorize here]({auth_url})")
 else:
     # Step 2: Handle the redirect and exchange the code for an access token
-    code = st.query_params['code']
+    code = query_params['code'][0]
 
     token_url = "https://zoom.us/oauth/token"
     auth_string = f"{CLIENT_ID}:{CLIENT_SECRET}"
@@ -67,6 +76,7 @@ else:
             st.write("Meeting ID:", meeting_details['id'])
             st.write("Start URL:", meeting_details['start_url'])
             st.write("Join URL:", meeting_details['join_url'])
+            st.markdown(f'<iframe src="{meeting_details["join_url"]}" width="700" height="500"></iframe>', unsafe_allow_html=True)
         else:
             st.error("Error creating Zoom meeting. Please check the API response.")
             st.write(meeting_details)
