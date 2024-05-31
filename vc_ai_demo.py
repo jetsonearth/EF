@@ -24,7 +24,7 @@ auth_url = f"https://zoom.us/oauth/authorize?response_type=code&client_id={CLIEN
 
 st.title("VC AI Agent Demo with OAuth")
 
-query_params = st.query_params()
+query_params = st.query_params
 st.write("Query Params:", query_params)
 
 def transcribe_audio(filename):
