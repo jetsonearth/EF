@@ -2,12 +2,11 @@ import streamlit as st
 import requests
 import base64
 import json
-import webbrowser
 
 # Zoom OAuth credentials (replace with your own)
 CLIENT_ID = 'H6VyMtjWQV2VNr2JwAQNDA'
 CLIENT_SECRET = 'zpqivmGpbBbo7YsVg4zRBHiu0UKgAcMz'
-REDIRECT_URI = 'http://localhost:8515'  # Your Redirect URI
+REDIRECT_URI = 'http://localhost:8516'  # Your Redirect URI
 
 # Step 1: Authorize the app
 auth_url = f"https://zoom.us/oauth/authorize?response_type=code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}"
@@ -17,7 +16,7 @@ st.title("VC AI Agent Demo with OAuth")
 if 'code' not in st.query_params:
     st.write("Please authorize the app to use your Zoom account:")
     if st.button('Authorize'):
-        webbrowser.open(auth_url)
+        st.write(f"[Authorize here]({auth_url})")
 else:
     # Step 2: Handle the redirect and exchange the code for an access token
     code = st.query_params['code']
