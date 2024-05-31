@@ -4,8 +4,8 @@ import base64
 import json
 
 # Zoom OAuth credentials (replace with your own)
-CLIENT_ID = 'H6VyMtjWQV2VNr2JwAQNDA'
-CLIENT_SECRET = 'zpqivmGpbBbo7YsVg4zRBHiu0UKgAcMz'
+CLIENT_ID = 'fhTNVEMTLGjbswpuumQ6Q'
+CLIENT_SECRET = '32l1eslYqGoHiY7a6ugFl3Xh389snwbe'
 REDIRECT_URI = 'https://efdemo.streamlit.app/'  # Your Redirect URI
 
 # Step 1: Authorize the app
